@@ -52,6 +52,9 @@
 		<header>
 			<h1>Welcome, {data.user.firstName || data.user.email}!</h1>
 			<div class="header-actions">
+				{#if data.isAmbassador}
+					<a href="/app/ambassador" class="ambassador-btn">Ambassador</a>
+				{/if}
 				{#if data.user.isAdmin}
 					<a href="/app/admin" class="admin-btn">Admin</a>
 				{/if}
@@ -197,17 +200,27 @@
 		align-items: center;
 	}
 
-	.admin-btn {
+	.admin-btn,
+	.ambassador-btn {
 		padding: 0.5rem 1rem;
 		background: rgba(255, 255, 255, 0.8);
-		border: 1px solid #ec3750;
-		color: #ec3750;
 		border-radius: 20px;
 		font-family: 'Kodchasan', sans-serif;
 		text-decoration: none;
 	}
 
-	.admin-btn:hover {
+	.admin-btn {
+		border: 1px solid #ec3750;
+		color: #ec3750;
+	}
+
+	.ambassador-btn {
+		border: 1px solid #a633d6;
+		color: #a633d6;
+	}
+
+	.admin-btn:hover,
+	.ambassador-btn:hover {
 		background: rgba(255, 255, 255, 1);
 	}
 

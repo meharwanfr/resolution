@@ -15,6 +15,14 @@
 
 	let pathway = $derived(pathwayInfo[data.pathwayId]);
 	const weeks = Array.from({ length: 8 }, (_, i) => i + 1);
+
+	function isWeekPublished(week: number): boolean {
+		return data.publishedWeeks[week]?.isPublished === true;
+	}
+
+	function getWeekTitle(week: number): string {
+		return data.publishedWeeks[week]?.title || '';
+	}
 </script>
 
 <svelte:head>
@@ -40,10 +48,22 @@
 
 		<div class="weeks-grid">
 			{#each weeks as week}
-				<div class="week-card locked">
-					<img src="https://icons.hackclub.com/api/icons/8492a6/private" alt="Locked" class="lock-icon" />
-					<span class="week-number">Week {week}</span>
-				</div>
+				{@const published = isWeekPublished(week)}
+				{@const title = getWeekTitle(week)}
+				{#if published}
+					<a href="/app/pathway/{data.pathwayId.toLowerCase()}/week/{week}" class="week-card available">
+						<img src="https://icons.hackclub.com/api/icons/{pathway.color}/checkmark" alt="Available" class="status-icon" />
+						<span class="week-number">Week {week}</span>
+						{#if title}
+							<span class="week-title">{title}</span>
+						{/if}
+					</a>
+				{:else}
+					<div class="week-card locked">
+						<img src="https://icons.hackclub.com/api/icons/8492a6/private" alt="Locked" class="lock-icon" />
+						<span class="week-number">Week {week}</span>
+					</div>
+				{/if}
 			{/each}
 		</div>
 	</div>
@@ -126,7 +146,20 @@
 		opacity: 0.6;
 	}
 
-	.lock-icon {
+	.week-card.available {
+		text-decoration: none;
+		border-color: #33d6a6;
+		cursor: pointer;
+		transition: transform 0.15s, border-color 0.15s;
+	}
+
+	.week-card.available:hover {
+		transform: translateY(-2px);
+		border-color: #af98ff;
+	}
+
+	.lock-icon,
+	.status-icon {
 		width: 32px;
 		height: 32px;
 	}
@@ -135,6 +168,20 @@
 		font-size: 1rem;
 		font-weight: 600;
 		color: #8492a6;
+	}
+
+	.week-card.available .week-number {
+		color: #1a1a2e;
+	}
+
+	.week-title {
+		font-size: 0.8rem;
+		color: #1a1a2e;
+		text-align: center;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	@media (max-width: 768px) {

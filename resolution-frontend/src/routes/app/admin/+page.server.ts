@@ -1,8 +1,11 @@
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { user, programEnrollment, workshopCompletion, weeklyShip, programSeason } from '$lib/server/db/schema';
+import { user, programEnrollment, workshopCompletion, weeklyShip, programSeason, ambassadorPathway } from '$lib/server/db/schema';
 import { eq, count, sql, desc } from 'drizzle-orm';
 import { error, fail } from '@sveltejs/kit';
+
+const validPathways = ['PYTHON', 'WEB_DEV', 'GAME_DEV', 'HARDWARE', 'DESIGN', 'GENERAL_CODING'] as const;
+type Pathway = typeof validPathways[number];
 
 export const load: PageServerLoad = async ({ parent }) => {
 	const { user: currentUser } = await parent();
@@ -11,7 +14,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 		throw error(403, 'Access denied');
 	}
 
-	const [users, analytics] = await Promise.all([
+	const [users, analytics, ambassadorAssignments] = await Promise.all([
 		db
 			.select({
 				id: user.id,
@@ -31,8 +34,16 @@ export const load: PageServerLoad = async ({ parent }) => {
 			db.select({ count: count() }).from(programEnrollment).where(eq(programEnrollment.status, 'ACTIVE')),
 			db.select({ count: count() }).from(workshopCompletion).where(sql`${workshopCompletion.completedAt} IS NOT NULL`),
 			db.select({ count: count() }).from(weeklyShip).where(eq(weeklyShip.status, 'SHIPPED'))
-		])
+		]),
+
+		db.select().from(ambassadorPathway)
 	]);
+
+	const ambassadorsByUser = ambassadorAssignments.reduce((acc, a) => {
+		if (!acc[a.userId]) acc[a.userId] = [];
+		acc[a.userId].push(a.pathway);
+		return acc;
+	}, {} as Record<string, Pathway[]>);
 
 	return {
 		users,
@@ -41,7 +52,9 @@ export const load: PageServerLoad = async ({ parent }) => {
 			activeEnrollments: analytics[1][0].count,
 			completedWorkshops: analytics[2][0].count,
 			shippedProjects: analytics[3][0].count
-		}
+		},
+		ambassadorsByUser,
+		pathways: validPathways
 	};
 };
 
@@ -95,6 +108,55 @@ export const actions: Actions = {
 		}
 
 		await db.delete(user).where(eq(user.id, userId));
+
+		return { success: true };
+	},
+
+	assignAmbassador: async ({ request, locals }) => {
+		if (!locals.user?.isAdmin) {
+			return fail(403, { error: 'Access denied' });
+		}
+
+		const formData = await request.formData();
+		const userId = formData.get('userId') as string;
+		const pathway = formData.get('pathway') as Pathway;
+
+		if (!userId || !pathway) {
+			return fail(400, { error: 'User ID and pathway required' });
+		}
+
+		if (!validPathways.includes(pathway)) {
+			return fail(400, { error: 'Invalid pathway' });
+		}
+
+		try {
+			await db.insert(ambassadorPathway).values({
+				userId,
+				pathway,
+				assignedBy: locals.user.id
+			});
+		} catch {
+			return fail(400, { error: 'Already assigned to this pathway' });
+		}
+
+		return { success: true };
+	},
+
+	removeAmbassador: async ({ request, locals }) => {
+		if (!locals.user?.isAdmin) {
+			return fail(403, { error: 'Access denied' });
+		}
+
+		const formData = await request.formData();
+		const userId = formData.get('userId') as string;
+		const pathway = formData.get('pathway') as Pathway;
+
+		if (!userId || !pathway) {
+			return fail(400, { error: 'User ID and pathway required' });
+		}
+
+		await db.delete(ambassadorPathway)
+			.where(sql`${ambassadorPathway.userId} = ${userId} AND ${ambassadorPathway.pathway} = ${pathway}`);
 
 		return { success: true };
 	}

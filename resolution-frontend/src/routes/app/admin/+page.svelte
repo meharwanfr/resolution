@@ -7,6 +7,16 @@
 
 	let searchQuery = $state('');
 	let confirmDelete = $state<string | null>(null);
+	let ambassadorModal = $state<{ userId: string; userName: string } | null>(null);
+
+	const pathwayLabels: Record<string, string> = {
+		PYTHON: 'Python',
+		WEB_DEV: 'Web Dev',
+		GAME_DEV: 'Game Dev',
+		HARDWARE: 'Hardware',
+		DESIGN: 'Design',
+		GENERAL_CODING: 'General Coding'
+	};
 
 	const filteredUsers = $derived(
 		data.users.filter(
@@ -16,6 +26,10 @@
 				(u.lastName?.toLowerCase() || '').includes(searchQuery.toLowerCase())
 		)
 	);
+
+	function getUserAmbassadorPathways(userId: string) {
+		return data.ambassadorsByUser[userId] || [];
+	}
 </script>
 
 <svelte:head>
@@ -64,6 +78,7 @@
 							<th>Email</th>
 							<th>Slack ID</th>
 							<th>Admin</th>
+							<th>Ambassador</th>
 							<th>YSWS</th>
 							<th>Joined</th>
 							<th>Actions</th>
@@ -71,12 +86,24 @@
 					</thead>
 					<tbody>
 						{#each filteredUsers as u (u.id)}
+							{@const userPathways = getUserAmbassadorPathways(u.id)}
 							<tr>
 								<td>{u.firstName || ''} {u.lastName || ''}</td>
 								<td>{u.email}</td>
 								<td>{u.slackId || '-'}</td>
 								<td>
 									<span class="badge" class:admin={u.isAdmin}>{u.isAdmin ? 'Yes' : 'No'}</span>
+								</td>
+								<td>
+									{#if userPathways.length > 0}
+										<div class="pathway-badges">
+											{#each userPathways as pathway}
+												<span class="badge ambassador">{pathwayLabels[pathway]}</span>
+											{/each}
+										</div>
+									{:else}
+										<span class="badge">-</span>
+									{/if}
 								</td>
 								<td>
 									<span class="badge" class:eligible={u.yswsEligible}>{u.yswsEligible ? 'Yes' : 'No'}</span>
@@ -89,6 +116,9 @@
 											{u.isAdmin ? 'Remove Admin' : 'Make Admin'}
 										</button>
 									</form>
+									<button type="button" class="action-btn ambassador-btn" onclick={() => ambassadorModal = { userId: u.id, userName: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email }}>
+										Ambassador
+									</button>
 									{#if confirmDelete === u.id}
 										<form method="POST" action="?/deleteUser" use:enhance={() => {
 											return async ({ update }) => {
@@ -111,6 +141,42 @@
 			</div>
 		</section>
 	</div>
+
+	{#if ambassadorModal}
+		{@const userPathways = getUserAmbassadorPathways(ambassadorModal.userId)}
+		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+		<div class="modal-overlay" onclick={() => ambassadorModal = null}>
+			<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+			<div class="modal" onclick={(e) => e.stopPropagation()}>
+				<h3>Manage Ambassador: {ambassadorModal.userName}</h3>
+				<p class="modal-subtitle">Assign pathways this user can edit</p>
+				
+				<div class="pathway-list">
+					{#each data.pathways as pathway}
+						{@const isAssigned = userPathways.includes(pathway)}
+						<div class="pathway-item">
+							<span class="pathway-name">{pathwayLabels[pathway]}</span>
+							{#if isAssigned}
+								<form method="POST" action="?/removeAmbassador" use:enhance>
+									<input type="hidden" name="userId" value={ambassadorModal.userId} />
+									<input type="hidden" name="pathway" value={pathway} />
+									<button type="submit" class="action-btn danger">Remove</button>
+								</form>
+							{:else}
+								<form method="POST" action="?/assignAmbassador" use:enhance>
+									<input type="hidden" name="userId" value={ambassadorModal.userId} />
+									<input type="hidden" name="pathway" value={pathway} />
+									<button type="submit" class="action-btn assign">Assign</button>
+								</form>
+							{/if}
+						</div>
+					{/each}
+				</div>
+
+				<button class="close-btn" onclick={() => ambassadorModal = null}>Close</button>
+			</div>
+		</div>
+	{/if}
 </PlatformBackground>
 
 <style>
@@ -269,5 +335,104 @@
 	.action-btn.danger:hover {
 		background: #ec3750;
 		color: white;
+	}
+
+	.action-btn.assign {
+		border-color: #33d6a6;
+		color: #33d6a6;
+	}
+
+	.action-btn.assign:hover {
+		background: #33d6a6;
+		color: white;
+	}
+
+	.action-btn.ambassador-btn {
+		border-color: #338eda;
+		color: #338eda;
+	}
+
+	.action-btn.ambassador-btn:hover {
+		background: #338eda;
+		color: white;
+	}
+
+	.badge.ambassador {
+		background: #338eda;
+		color: white;
+		margin: 0.125rem;
+	}
+
+	.pathway-badges {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+
+	.modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1000;
+	}
+
+	.modal {
+		background: white;
+		border-radius: 16px;
+		padding: 2rem;
+		max-width: 400px;
+		width: 90%;
+	}
+
+	.modal h3 {
+		margin: 0 0 0.5rem 0;
+		font-size: 1.25rem;
+	}
+
+	.modal-subtitle {
+		color: #8492a6;
+		margin: 0 0 1.5rem 0;
+		font-size: 0.875rem;
+	}
+
+	.pathway-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.pathway-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem;
+		background: #f8f9fa;
+		border-radius: 8px;
+	}
+
+	.pathway-name {
+		font-weight: 500;
+	}
+
+	.close-btn {
+		width: 100%;
+		padding: 0.75rem;
+		background: #f0f0f0;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		font-family: inherit;
+		font-weight: 500;
+	}
+
+	.close-btn:hover {
+		background: #e0e0e0;
 	}
 </style>

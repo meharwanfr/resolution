@@ -1,22 +1,30 @@
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { userPathway } from '$lib/server/db/schema';
+import { userPathway, ambassadorPathway } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ parent }) => {
 	const { user, season, enrollment } = await parent();
 
-	const pathways = await db
-		.select({ pathway: userPathway.pathway })
-		.from(userPathway)
-		.where(eq(userPathway.userId, user.id));
+	const [pathways, ambassadorCheck] = await Promise.all([
+		db
+			.select({ pathway: userPathway.pathway })
+			.from(userPathway)
+			.where(eq(userPathway.userId, user.id)),
+		db
+			.select({ userId: ambassadorPathway.userId })
+			.from(ambassadorPathway)
+			.where(eq(ambassadorPathway.userId, user.id))
+			.limit(1)
+	]);
 
 	return {
 		user,
 		season,
 		enrollment,
-		selectedPathways: pathways.map((p) => p.pathway)
+		selectedPathways: pathways.map((p) => p.pathway),
+		isAmbassador: ambassadorCheck.length > 0
 	};
 };
 

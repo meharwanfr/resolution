@@ -56,6 +56,8 @@
     position: relative;
     z-index: 1;
     min-height: 100vh;
+    height: 100%;
+    overflow-y: auto;
   }
 
   @keyframes pan {

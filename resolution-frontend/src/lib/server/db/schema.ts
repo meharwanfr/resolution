@@ -204,5 +204,40 @@ export const ambassadorPayoutItemRelations = relations(ambassadorPayoutItem, ({ 
 }));
 
 export const userPathwayRelations = relations(userPathway, ({ one }) => ({
-  user: one(user, { fields: [userPathway.userId], references: [user.id] })
+	user: one(user, { fields: [userPathway.userId], references: [user.id] })
+}));
+
+// Ambassador pathway assignments - which pathways an ambassador can edit
+export const ambassadorPathway = pgTable('ambassador_pathway', {
+	id: text('id').primaryKey().$defaultFn(() => createId()),
+	userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+	pathway: pathwayEnum('pathway').notNull(),
+	assignedAt: timestamp('assigned_at', { mode: 'date' }).notNull().defaultNow(),
+	assignedBy: text('assigned_by').notNull().references(() => user.id)
+}, (table) => [
+	uniqueIndex('ambassador_pathway_unique_idx').on(table.userId, table.pathway)
+]);
+
+// Pathway week content - stores markdown content for each week
+export const pathwayWeekContent = pgTable('pathway_week_content', {
+	id: text('id').primaryKey().$defaultFn(() => createId()),
+	pathway: pathwayEnum('pathway').notNull(),
+	weekNumber: integer('week_number').notNull(),
+	title: text('title').notNull().default(''),
+	content: text('content').notNull().default(''),
+	isPublished: boolean('is_published').notNull().default(false),
+	lastEditedBy: text('last_edited_by').references(() => user.id),
+	createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow()
+}, (table) => [
+	uniqueIndex('pathway_week_content_unique_idx').on(table.pathway, table.weekNumber)
+]);
+
+export const ambassadorPathwayRelations = relations(ambassadorPathway, ({ one }) => ({
+	user: one(user, { fields: [ambassadorPathway.userId], references: [user.id] }),
+	assignedByUser: one(user, { fields: [ambassadorPathway.assignedBy], references: [user.id] })
+}));
+
+export const pathwayWeekContentRelations = relations(pathwayWeekContent, ({ one }) => ({
+	editor: one(user, { fields: [pathwayWeekContent.lastEditedBy], references: [user.id] })
 }));
