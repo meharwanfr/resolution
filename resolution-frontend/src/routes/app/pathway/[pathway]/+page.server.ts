@@ -5,10 +5,10 @@ import { eq, and } from 'drizzle-orm';
 import { redirect, error } from '@sveltejs/kit';
 
 const pathwayCurators: Record<string, string> = {
-	PYTHON: 'Niko Yu',
-	WEB_DEV: 'Mahad Kalam',
-	GAME_DEV: 'Safia Ezzahir',
-	HARDWARE: 'Rudy Payaal',
+	PYTHON: 'Hack Club',
+	WEB_DEV: 'Hack Club',
+	GAME_DEV: 'Hack Club',
+	HARDWARE: 'Hack Club',
 	DESIGN: 'Hack Club',
 	GENERAL_CODING: 'Hack Club'
 };
