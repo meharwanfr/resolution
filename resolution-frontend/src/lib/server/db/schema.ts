@@ -5,7 +5,7 @@ import { createId } from '@paralleldrive/cuid2';
 // Enums
 export const enrollmentRoleEnum = pgEnum('enrollment_role', ['PARTICIPANT', 'AMBASSADOR']);
 export const enrollmentStatusEnum = pgEnum('enrollment_status', ['ACTIVE', 'DROPPED', 'COMPLETED']);
-export const pathwayEnum = pgEnum('pathway', ['PYTHON', 'RUST', 'GAME_DEV', 'HARDWARE', 'DESIGN', 'GENERAL_CODING']);
+export const pathwayEnum = pgEnum('pathway', ['PYTHON', 'WEB_DEV', 'GAME_DEV', 'HARDWARE', 'DESIGN', 'GENERAL_CODING']);
 export const difficultyEnum = pgEnum('difficulty', ['BEGINNER', 'INTERMEDIATE', 'ADVANCED']);
 export const shipStatusEnum = pgEnum('ship_status', ['PLANNED', 'IN_PROGRESS', 'SHIPPED', 'MISSED']);
 export const payoutStatusEnum = pgEnum('payout_status', ['DRAFT', 'PENDING', 'PAID', 'CANCELED']);
