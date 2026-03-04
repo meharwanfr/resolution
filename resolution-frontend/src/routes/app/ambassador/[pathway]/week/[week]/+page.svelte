@@ -3,7 +3,7 @@
 	import PlatformBackground from '$lib/components/PlatformBackground.svelte';
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
-	import { marked } from 'marked';
+	import SvelteMarkdown from 'svelte-marked';
 
 	let { data }: { data: PageData } = $props();
 
@@ -30,7 +30,7 @@
 
 	const pathway = $derived(pathwayInfo[data.pathwayId]);
 
-	const previewHtml = $derived(marked.parse(content) as string);
+
 
 	onMount(() => {
 		let editor: any = null;
@@ -119,7 +119,7 @@
 			{#if showPreview}
 				<div class="preview-container">
 					<div class="preview-content prose">
-						{@html previewHtml}
+						<SvelteMarkdown source={content} />
 					</div>
 				</div>
 			{:else}
