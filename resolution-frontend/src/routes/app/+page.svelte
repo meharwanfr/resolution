@@ -2,17 +2,11 @@
 	import type { PageData } from './$types';
 	import PlatformBackground from '$lib/components/PlatformBackground.svelte';
 	import { enhance } from '$app/forms';
+	import { PATHWAYS } from '$lib/pathways';
 
 	let { data }: { data: PageData } = $props();
 
-	const pathways = [
-		{ id: 'PYTHON', label: 'Python', icon: 'terminal', color: 'ec3750' },
-		{ id: 'RUST', label: 'Rust', icon: 'terminal', color: '338eda' },
-		{ id: 'GAME_DEV', label: 'Game Dev', icon: 'controls', color: '33d6a6' },
-		{ id: 'HARDWARE', label: 'Hardware', icon: 'settings', color: 'ff8c37' },
-		{ id: 'DESIGN', label: 'Design', icon: 'idea', color: 'a633d6' },
-		{ id: 'GENERAL_CODING', label: 'General Coding', icon: 'code', color: '5bc0de' }
-	];
+	const pathways = PATHWAYS;
 
 	let selectedPathways = $state<string[]>([]);
 	let isEditing = $state(true);
@@ -52,6 +46,9 @@
 		<header>
 			<h1>Welcome, {data.user.firstName || data.user.email}!</h1>
 			<div class="header-actions">
+				{#if data.isReviewer || data.user.isAdmin}
+					<a href="/app/reviewer" class="reviewer-btn">Reviewer</a>
+				{/if}
 				{#if data.isAmbassador}
 					<a href="/app/ambassador" class="ambassador-btn">Ambassador</a>
 				{/if}
@@ -193,7 +190,8 @@
 	}
 
 	.admin-btn,
-	.ambassador-btn {
+	.ambassador-btn,
+	.reviewer-btn {
 		padding: 0.5rem 1rem;
 		background: rgba(255, 255, 255, 0.8);
 		border-radius: 20px;
@@ -211,8 +209,14 @@
 		color: #a633d6;
 	}
 
+	.reviewer-btn {
+		border: 1px solid #ff8c37;
+		color: #ff8c37;
+	}
+
 	.admin-btn:hover,
-	.ambassador-btn:hover {
+	.ambassador-btn:hover,
+	.reviewer-btn:hover {
 		background: rgba(255, 255, 255, 1);
 	}
 
