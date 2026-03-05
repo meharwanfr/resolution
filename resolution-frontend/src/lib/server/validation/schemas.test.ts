@@ -128,6 +128,7 @@ describe('projectSubmissionSchema', () => {
 		zipPostalCode: '62701',
 		birthday: '2005-06-15',
 		hackatimeProject: 'my-project',
+		hoursSpent: 10.5,
 		pathway: 'PYTHON',
 		week: 1
 	};
@@ -228,9 +229,6 @@ describe('projectSubmissionSchema', () => {
 
 	// Required text fields
 	it.each([
-		'howDidYouHear',
-		'doingWell',
-		'improvements',
 		'firstName',
 		'lastName',
 		'description',
