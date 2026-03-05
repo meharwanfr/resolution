@@ -5,6 +5,10 @@ import type { RequestHandler } from './$types';
 import { requireAuth } from '$lib/server/auth/guard';
 import { projectSubmissionSchema } from '$lib/server/validation';
 import { ZodError } from 'zod';
+import { db } from '$lib/server/db';
+import { userPathway, pathwayWeekContent } from '$lib/server/db/schema';
+import { eq, and } from 'drizzle-orm';
+import { type PathwayId } from '$lib/pathways';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB (Airtable upload limit)
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
@@ -44,6 +48,29 @@ export const POST: RequestHandler = async (event) => {
 			...textFields,
 			week: parseInt(textFields.week, 10)
 		});
+
+		const [enrollment] = await db
+			.select()
+			.from(userPathway)
+			.where(and(eq(userPathway.userId, user.id), eq(userPathway.pathway, parsed.pathway as PathwayId)))
+			.limit(1);
+
+		if (!enrollment) {
+			return json({ error: 'You are not enrolled in this pathway' }, { status: 403 });
+		}
+
+		const [weekContent] = await db
+			.select({ isPublished: pathwayWeekContent.isPublished })
+			.from(pathwayWeekContent)
+			.where(and(
+				eq(pathwayWeekContent.pathway, parsed.pathway as PathwayId),
+				eq(pathwayWeekContent.weekNumber, parsed.week)
+			))
+			.limit(1);
+
+		if (!weekContent?.isPublished) {
+			return json({ error: 'This week is not available for submissions' }, { status: 403 });
+		}
 
 		const base = new Airtable({ apiKey: env.AIRTABLE_API_TOKEN }).base(env.AIRTABLE_BASE_ID);
 
