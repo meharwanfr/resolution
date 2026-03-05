@@ -269,7 +269,7 @@ describe('projectSubmissionSchema', () => {
 
 	// Optional addressLine2
 	it('defaults addressLine2 to empty string when omitted', () => {
-		const { addressLine2, ...withoutLine2 } = valid;
+		const { addressLine2, ...withoutLine2 } = valid as typeof valid & { addressLine2?: string };
 		const result = projectSubmissionSchema.safeParse(withoutLine2);
 		expect(result.success).toBe(true);
 		if (result.success) {
