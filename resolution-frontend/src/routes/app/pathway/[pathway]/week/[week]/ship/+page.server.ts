@@ -3,16 +3,14 @@ import { db } from '$lib/server/db';
 import { userPathway, pathwayWeekContent } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { redirect, error } from '@sveltejs/kit';
-
-const validPathways = ['PYTHON', 'RUST', 'GAME_DEV', 'HARDWARE', 'DESIGN', 'GENERAL_CODING'] as const;
-type Pathway = typeof validPathways[number];
+import { PATHWAY_IDS, type PathwayId } from '$lib/pathways';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { user } = await parent();
-	const pathwayId = params.pathway.toUpperCase() as Pathway;
+	const pathwayId = params.pathway.toUpperCase() as PathwayId;
 	const weekNumber = parseInt(params.week);
 
-	if (!validPathways.includes(pathwayId)) {
+	if (!PATHWAY_IDS.includes(pathwayId)) {
 		throw error(404, 'Pathway not found');
 	}
 
