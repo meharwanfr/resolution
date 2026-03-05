@@ -37,6 +37,7 @@
 	let zipPostalCode = $state('');
 	let birthday = $state('');
 	let hackatimeProject = $state('');
+	let hoursSpent = $state('');
 	let screenshotFile = $state<File | null>(null);
 	let screenshotPreview = $state('');
 
@@ -92,6 +93,7 @@
 			formData.append('zipPostalCode', zipPostalCode);
 			formData.append('birthday', birthday);
 			formData.append('hackatimeProject', hackatimeProject);
+			formData.append('hoursSpent', hoursSpent);
 			formData.append('pathway', data.pathwayId);
 			formData.append('week', String(data.weekNumber));
 
@@ -161,7 +163,7 @@
 						<div class="form-row">
 							<div class="form-group">
 								<label for="codeUrl">Link to your code</label>
-								<input type="url" id="codeUrl" bind:value={codeUrl} required placeholder="https://github.com/..." />
+								<input type="url" id="codeUrl" bind:value={codeUrl} required placeholder="https://github.com/username/repo" pattern="https://github\.com/.+/.+" title="Must be a GitHub link (https://github.com/username/repo)" />
 							</div>
 							<div class="form-group">
 								<label for="playableUrl">Link to try it out</label>
@@ -172,6 +174,12 @@
 						<div class="form-group">
 							<label for="hackatimeProject">Hackatime Project Name</label>
 							<input type="text" id="hackatimeProject" bind:value={hackatimeProject} required maxlength="200" placeholder="my-cool-project" />
+						</div>
+
+						<div class="form-group">
+							<label for="hoursSpent">How many hours did you spend on your project?</label>
+							<p class="section-hint">If you're using hackatime, enter the amount of hours it shows on your project.</p>
+							<input type="number" id="hoursSpent" bind:value={hoursSpent} required min="0" step="any" placeholder="e.g. 12.5" />
 						</div>
 
 						<div class="form-group">
@@ -258,18 +266,18 @@
 						<h2>Feedback</h2>
 
 						<div class="form-group">
-							<label for="howDidYouHear">How did you hear about this?</label>
-							<input type="text" id="howDidYouHear" bind:value={howDidYouHear} required maxlength="500" />
+							<label for="howDidYouHear">How did you hear about this? <span class="optional">(optional)</span></label>
+							<input type="text" id="howDidYouHear" bind:value={howDidYouHear} maxlength="500" />
 						</div>
 
 						<div class="form-group">
-							<label for="doingWell">What are we doing well?</label>
-							<textarea id="doingWell" bind:value={doingWell} required maxlength="1000" rows="2"></textarea>
+							<label for="doingWell">What are we doing well? <span class="optional">(optional)</span></label>
+							<textarea id="doingWell" bind:value={doingWell} maxlength="1000" rows="2"></textarea>
 						</div>
 
 						<div class="form-group">
-							<label for="improvements">How can we improve?</label>
-							<textarea id="improvements" bind:value={improvements} required maxlength="1000" rows="2"></textarea>
+							<label for="improvements">How can we improve? <span class="optional">(optional)</span></label>
+							<textarea id="improvements" bind:value={improvements} maxlength="1000" rows="2"></textarea>
 						</div>
 					</section>
 
@@ -392,6 +400,7 @@
 	input[type='url'],
 	input[type='email'],
 	input[type='date'],
+	input[type='number'],
 	textarea {
 		width: 100%;
 		padding: 0.625rem 0.75rem;

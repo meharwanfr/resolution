@@ -42,11 +42,14 @@ const safeUrl = z.string().url('Please enter a valid URL').max(2000).refine(
 );
 
 export const projectSubmissionSchema = z.object({
-	codeUrl: safeUrl,
+	codeUrl: safeUrl.refine(
+		(val) => /^https:\/\/github\.com\/.+\/.+/.test(val),
+		{ message: 'Must be a GitHub link (https://github.com/username/repo)' }
+	),
 	playableUrl: safeUrl,
-	howDidYouHear: z.string().min(1, 'This field is required').max(500),
-	doingWell: z.string().min(1, 'This field is required').max(1000),
-	improvements: z.string().min(1, 'This field is required').max(1000),
+	howDidYouHear: z.string().max(500).optional().default(''),
+	doingWell: z.string().max(1000).optional().default(''),
+	improvements: z.string().max(1000).optional().default(''),
 	firstName: z.string().min(1, 'First name is required').max(100),
 	lastName: z.string().min(1, 'Last name is required').max(100),
 	email: z.string().email('Please enter a valid email').max(254).transform((v) => v.trim().toLowerCase()),
@@ -60,6 +63,7 @@ export const projectSubmissionSchema = z.object({
 	zipPostalCode: z.string().min(1, 'ZIP / Postal code is required').max(20),
 	birthday: z.string().min(1, 'Birthday is required').regex(/^\d{4}-\d{2}-\d{2}$/, 'Please enter a valid date'),
 	hackatimeProject: z.string().min(1, 'Hackatime project is required').max(200),
+	hoursSpent: z.coerce.number().min(0, 'Hours must be 0 or more'),
 	pathway: z.string().min(1),
 	week: z.number().int().min(1).max(8)
 });
