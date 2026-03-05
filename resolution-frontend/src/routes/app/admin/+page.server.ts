@@ -175,8 +175,11 @@ export const actions: Actions = {
 				pathway,
 				assignedBy: locals.user.id
 			});
-		} catch {
-			return fail(400, { error: 'Already assigned to this pathway' });
+		} catch (err) {
+			if (err instanceof Error && 'code' in err && (err as { code: string }).code === '23505') {
+				return fail(400, { error: 'Already assigned to this pathway' });
+			}
+			return fail(500, { error: 'Failed to assign pathway' });
 		}
 
 		return { success: true };
