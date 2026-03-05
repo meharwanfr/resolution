@@ -128,7 +128,7 @@ describe('projectSubmissionSchema', () => {
 		zipPostalCode: '62701',
 		birthday: '2005-06-15',
 		hackatimeProject: 'my-project',
-		hoursSpent: 10.5,
+		hoursSpent: '10.5',
 		pathway: 'PYTHON',
 		week: 1
 	};

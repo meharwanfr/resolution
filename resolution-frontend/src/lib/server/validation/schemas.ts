@@ -63,7 +63,14 @@ export const projectSubmissionSchema = z.object({
 	zipPostalCode: z.string().min(1, 'ZIP / Postal code is required').max(20),
 	birthday: z.string().min(1, 'Birthday is required').regex(/^\d{4}-\d{2}-\d{2}$/, 'Please enter a valid date'),
 	hackatimeProject: z.string().min(1, 'Hackatime project is required').max(200),
-	hoursSpent: z.coerce.number().min(0, 'Hours must be 0 or more'),
+	hoursSpent: z
+		.string()
+		.min(1, 'Hours spent is required')
+		.refine((v) => {
+			const n = Number(v);
+			return !Number.isNaN(n) && n >= 0;
+		}, { message: 'Hours must be 0 or more' })
+		.transform((v) => Number(v)),
 	pathway: z.string().min(1),
 	week: z.number().int().min(1).max(8)
 });
