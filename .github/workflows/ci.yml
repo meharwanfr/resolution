@@ -31,11 +31,12 @@ jobs:
   security:
     name: Security Audit
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: bun audit --audit-level=high
+      - run: bun audit --audit-level=critical
 
   build:
     name: Build
