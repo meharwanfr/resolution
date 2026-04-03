@@ -220,32 +220,35 @@
 						bind:this={prizeFileInput}
 					/>
 					<div class="dropzone-content">
-						<p>{uploading ? 'Uploading to Hack Club CDN...' : 'Drop image here or click to upload'}</p>
-						<span>PNG, JPG, WEBP, GIF up to 10MB</span>
+						{#if prizeImageUrl}
+							<img src={prizeImageUrl} alt="Prize preview" class="dropzone-preview" />
+						{/if}
+						<p>
+							{uploading
+								? 'Uploading...'
+								: prizeImageUrl
+									? 'Uploaded image preview'
+									: 'Drop image here or click to upload'}
+						</p>
+						<span>{prizeImageUrl ? 'Drop another image to replace it.' : 'PNG, JPG, WEBP, GIF up to 10MB'}</span>
+						{#if prizeImageUrl}
+							<button
+								type="button"
+								class="clear-upload-btn"
+								onclick={(event) => {
+									event.stopPropagation();
+									prizeImageUrl = '';
+									uploadError = '';
+								}}
+							>
+								Remove image
+							</button>
+						{/if}
 					</div>
 				</div>
 
 				{#if uploadError}
 					<p class="upload-error">{uploadError}</p>
-				{/if}
-
-				{#if prizeImageUrl}
-					<div class="upload-result">
-						<img src={prizeImageUrl} alt="Prize preview" class="prize-preview" />
-						<div class="upload-url-row">
-							<input type="text" id="prizeImageUrl" value={prizeImageUrl} readonly />
-							<button
-								type="button"
-								class="clear-upload-btn"
-								onclick={() => {
-									prizeImageUrl = '';
-									uploadError = '';
-								}}
-							>
-								Clear
-							</button>
-						</div>
-					</div>
 				{/if}
 			</div>
 
@@ -422,8 +425,22 @@
 	}
 
 	.dropzone-content {
+		position: relative;
+		z-index: 1;
 		pointer-events: none;
 		text-align: center;
+	}
+
+	.dropzone-preview {
+		display: block;
+		width: min(180px, 100%);
+		height: min(180px, 100%);
+		aspect-ratio: 1 / 1;
+		object-fit: cover;
+		border-radius: 14px;
+		border: 1px solid #d5dbe3;
+		margin: 0 auto 0.75rem;
+		box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
 	}
 
 	.dropzone-content p {
@@ -445,36 +462,13 @@
 		color: #ec3750;
 	}
 
-	.upload-result {
-		margin-top: 0.75rem;
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		flex-wrap: wrap;
-	}
-
-	.prize-preview {
-		width: 56px;
-		height: 56px;
-		object-fit: cover;
-		border-radius: 10px;
-		border: 1px solid #d5dbe3;
-	}
-
-	.upload-url-row {
-		flex: 1;
-		display: flex;
-		gap: 0.5rem;
-		min-width: 280px;
-	}
-
-	.upload-url-row input {
-		flex: 1;
-		background: #f8f9fa;
-	}
-
 	.clear-upload-btn {
+		pointer-events: auto;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		padding: 0.5rem 0.75rem;
+		margin-top: 0.75rem;
 		border: 1px solid #d5dbe3;
 		border-radius: 8px;
 		background: #fff;

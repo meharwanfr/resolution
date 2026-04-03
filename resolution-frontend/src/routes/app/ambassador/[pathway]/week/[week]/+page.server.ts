@@ -3,7 +3,7 @@ import { db } from '$lib/server/db';
 import { ambassadorPathway, pathwayWeekContent } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { error, fail } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { HACK_CLUB_CDN_API_KEY } from '$env/static/private';
 
 const validPathways = ['PYTHON', 'RUST', 'GAME_DEV', 'HARDWARE', 'DESIGN', 'GENERAL_CODING'] as const;
 type Pathway = typeof validPathways[number];
@@ -85,11 +85,6 @@ export const actions: Actions = {
 			return fail(403, { error: 'Not authorized' });
 		}
 
-		const apiKey = env.HACK_CLUB_CDN_API_KEY;
-		if (!apiKey) {
-			return fail(500, { error: 'CDN upload is not configured on the server' });
-		}
-
 		const formData = await request.formData();
 		const file = formData.get('file');
 
@@ -111,7 +106,7 @@ export const actions: Actions = {
 		const uploadResponse = await fetch('https://cdn.hackclub.com/api/v4/upload', {
 			method: 'POST',
 			headers: {
-				Authorization: `Bearer ${apiKey}`
+				Authorization: `Bearer ${HACK_CLUB_CDN_API_KEY}`
 			},
 			body: upstreamForm
 		});
