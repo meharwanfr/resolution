@@ -13,10 +13,12 @@
 
 	const initialTitle = data.content?.title || '';
 	const initialContent = data.content?.content || '';
+	const initialPrizeImageUrl = data.content?.prizeImageUrl || '';
 	const initialPublished = data.content?.isPublished || false;
 
 	let title = $state(initialTitle);
 	let content = $state(initialContent);
+	let prizeImageUrl = $state(initialPrizeImageUrl);
 	let isPublished = $state(initialPublished);
 	let editorContainer = $state<HTMLDivElement | null>(null);
 	let monacoEditor: any = null;
@@ -107,6 +109,17 @@
 			<div class="title-row">
 				<label for="title">Title</label>
 				<input type="text" id="title" name="title" bind:value={title} placeholder="Enter week title..." />
+			</div>
+
+			<div class="title-row">
+				<label for="prizeImageUrl">Prize Image URL</label>
+				<input
+					type="url"
+					id="prizeImageUrl"
+					name="prizeImageUrl"
+					bind:value={prizeImageUrl}
+					placeholder="https://example.com/prize.png"
+				/>
 			</div>
 
 			<input type="hidden" name="content" value={content} />

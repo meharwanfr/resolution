@@ -7,6 +7,25 @@ import { error, fail } from '@sveltejs/kit';
 const validPathways = ['PYTHON', 'RUST', 'GAME_DEV', 'HARDWARE', 'DESIGN', 'GENERAL_CODING'] as const;
 type Pathway = typeof validPathways[number];
 
+function parsePrizeImageUrl(rawValue: FormDataEntryValue | null) {
+	const value = typeof rawValue === 'string' ? rawValue.trim() : '';
+
+	if (!value) {
+		return { value: null as string | null, error: null as string | null };
+	}
+
+	try {
+		const parsed = new URL(value);
+		if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+			return { value: null, error: 'Prize image URL must start with http:// or https://' };
+		}
+
+		return { value, error: null };
+	} catch {
+		return { value: null, error: 'Prize image URL must be a valid URL' };
+	}
+}
+
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { user } = await parent();
 	const pathwayId = params.pathway.toUpperCase() as Pathway;
@@ -69,6 +88,11 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const title = formData.get('title') as string;
 		const content = formData.get('content') as string;
+		const parsedPrizeImage = parsePrizeImageUrl(formData.get('prizeImageUrl'));
+
+		if (parsedPrizeImage.error) {
+			return fail(400, { error: parsedPrizeImage.error });
+		}
 
 		const existing = await db
 			.select()
@@ -82,6 +106,7 @@ export const actions: Actions = {
 				.set({
 					title,
 					content,
+					prizeImageUrl: parsedPrizeImage.value,
 					lastEditedBy: locals.user.id,
 					updatedAt: new Date()
 				})
@@ -92,6 +117,7 @@ export const actions: Actions = {
 				weekNumber,
 				title,
 				content,
+				prizeImageUrl: parsedPrizeImage.value,
 				lastEditedBy: locals.user.id
 			});
 		}

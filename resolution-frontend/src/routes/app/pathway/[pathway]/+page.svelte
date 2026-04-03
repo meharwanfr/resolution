@@ -23,6 +23,10 @@
 	function getWeekTitle(week: number): string {
 		return data.publishedWeeks[week]?.title || '';
 	}
+
+	function getPrizeImageUrl(week: number): string {
+		return data.publishedWeeks[week]?.prizeImageUrl || '';
+	}
 </script>
 
 <svelte:head>
@@ -50,8 +54,12 @@
 			{#each weeks as week}
 				{@const published = isWeekPublished(week)}
 				{@const title = getWeekTitle(week)}
+				{@const prizeImageUrl = getPrizeImageUrl(week)}
 				{#if published}
 					<a href="/app/pathway/{data.pathwayId.toLowerCase()}/week/{week}" class="week-card available">
+						{#if prizeImageUrl}
+							<img src={prizeImageUrl} alt="Week {week} prize" class="prize-image" loading="lazy" />
+						{/if}
 						<img src="https://icons.hackclub.com/api/icons/{pathway.color}/checkmark" alt="Available" class="status-icon" />
 						<span class="week-number">Week {week}</span>
 						{#if title}
@@ -60,6 +68,9 @@
 					</a>
 				{:else}
 					<div class="week-card locked">
+						{#if prizeImageUrl}
+							<img src={prizeImageUrl} alt="Week {week} prize" class="prize-image locked" loading="lazy" />
+						{/if}
 						<img src="https://icons.hackclub.com/api/icons/8492a6/private" alt="Locked" class="lock-icon" />
 						<span class="week-number">Week {week}</span>
 					</div>
@@ -130,6 +141,8 @@
 	}
 
 	.week-card {
+		position: relative;
+		overflow: visible;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -143,7 +156,8 @@
 	}
 
 	.week-card.locked {
-		opacity: 0.6;
+		border-color: #b5bfcc;
+		background: rgba(255, 255, 255, 0.7);
 	}
 
 	.week-card.available {
@@ -156,6 +170,24 @@
 	.week-card.available:hover {
 		transform: translateY(-2px);
 		border-color: #af98ff;
+	}
+
+	.prize-image {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 100px;
+		height: 100px;
+		object-fit: cover;
+		pointer-events: none;
+		transform: translate(22%, -40%) scale(1);
+		transition: transform 0.15s ease, opacity 0.15s ease;
+		z-index: 2;
+	}
+
+
+	.prize-image.locked {
+		opacity: 0.5;
 	}
 
 	.lock-icon,
