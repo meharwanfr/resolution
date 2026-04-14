@@ -41,10 +41,6 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		throw error(404, 'This week is not yet available');
 	}
 
-	if (!content.isSubmissionsOpen) {
-		throw error(403, 'Submissions have been closed for this week');
-	}
-
 	return {
 		pathwayId,
 		weekNumber,
