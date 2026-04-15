@@ -1,4 +1,0 @@
-{
-  "buildCommand": "cd resolution-frontend && npm run build",
-  "outputDirectory": "resolution-frontend/.svelte-kit/output/server"
-}
