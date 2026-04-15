@@ -5,9 +5,6 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --ignore-scripts
 
-# Install all dependencies
-RUN npm install
-
 COPY . .
 RUN bun run build
 
